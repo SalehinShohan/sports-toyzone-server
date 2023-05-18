@@ -39,7 +39,14 @@ async function run() {
         res.send(result);
     })
 
-    app.get('/allToys', async(req, res) => {
+    app.get('/allToys/:text', async(req, res) => {
+      console.log(req.params.text)
+
+      if(req.params.text=='sports' || req.params.text=='truck' || req.params.text=='police'){
+        const result = await toysCollection.find({status: req.params.text}).toArray();
+        return res.send(result);
+      }
+
         const result = await toysCollection.find({}).toArray();
         res.send(result);
     })
