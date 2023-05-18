@@ -10,8 +10,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const uri =
-  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jxsnyx4.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jxsnyx4.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -30,34 +29,59 @@ async function run() {
     const db = client.db("SportsToyZone");
     const toysCollection = db.collection("toys");
 
+    const indexKeys = { title: 1, category: 1 };
+    const indexOptions = { name: "title" };
 
-    app.post('/addToy', async(req, res) => {
-        const body = req.body;
-        body.createAt = new Date;
-        console.log(body)
-        const result = await toysCollection.insertOne(body);
-        console.log(result);
-        res.send(result);
-    })
+    const result = await toysCollection.createIndex(indexKeys, indexOptions);
 
-    app.get('/allToys/:text', async(req, res) => {
-      console.log(req.params.text)
+    app.get("/getToyByText/:text", async (req, res) => {
+      const text = req.params.text;
+      const result = await toysCollection
+        .find({
+          $or: [{ title: { $regex: text, $options: "i" } }],
+        })
+        .toArray();
+      res.send(result);
+    });
 
-      if(req.params.text=='sports' || req.params.text=='truck' || req.params.text=='police'){
-        const result = await toysCollection.find({status: req.params.text}).sort({createAt: -1}).toArray();
+    app.post("/addToy", async (req, res) => {
+      const body = req.body;
+      body.createAt = new Date();
+      console.log(body);
+      const result = await toysCollection.insertOne(body);
+      console.log(result);
+      res.send(result);
+    });
+
+    app.get("/allToys/:text", async (req, res) => {
+      console.log(req.params.text);
+
+      if (
+        req.params.text == "sports" ||
+        req.params.text == "truck" ||
+        req.params.text == "police"
+      ) {
+        const result = await toysCollection
+          .find({ status: req.params.text })
+          .sort({ createAt: -1 })
+          .toArray();
         return res.send(result);
       }
 
-        const result = await toysCollection.find({}).sort({createAt: -1}).toArray();
-        res.send(result);
-    })
-
-
-    app.get('/myToys/:email', async(req, res)=> {
-      console.log(req.params.email);
-      const result = await toysCollection.find({postedBy: req.params.email}).toArray();
+      const result = await toysCollection
+        .find({})
+        .sort({ createAt: -1 })
+        .toArray();
       res.send(result);
-    })
+    });
+
+    app.get("/myToys/:email", async (req, res) => {
+      console.log(req.params.email);
+      const result = await toysCollection
+        .find({ postedBy: req.params.email })
+        .toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
