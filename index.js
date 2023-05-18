@@ -33,6 +33,7 @@ async function run() {
 
     app.post('/addToy', async(req, res) => {
         const body = req.body;
+        body.createAt = new Date;
         console.log(body)
         const result = await toysCollection.insertOne(body);
         console.log(result);
@@ -43,12 +44,19 @@ async function run() {
       console.log(req.params.text)
 
       if(req.params.text=='sports' || req.params.text=='truck' || req.params.text=='police'){
-        const result = await toysCollection.find({status: req.params.text}).toArray();
+        const result = await toysCollection.find({status: req.params.text}).sort({createAt: -1}).toArray();
         return res.send(result);
       }
 
-        const result = await toysCollection.find({}).toArray();
+        const result = await toysCollection.find({}).sort({createAt: -1}).toArray();
         res.send(result);
+    })
+
+
+    app.get('/myToys/:email', async(req, res)=> {
+      console.log(req.params.email);
+      const result = await toysCollection.find({postedBy: req.params.email}).toArray();
+      res.send(result);
     })
 
     // Send a ping to confirm a successful connection
