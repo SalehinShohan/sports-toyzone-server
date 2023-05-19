@@ -29,10 +29,10 @@ async function run() {
     const db = client.db("SportsToyZone");
     const toysCollection = db.collection("toys");
 
-    const indexKeys = { title: 1, category: 1 };
-    const indexOptions = { name: "title" };
+    // const indexKeys = { title: 1, category: 1 };
+    // const indexOptions = { name: "title" };
 
-    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+    // const result = await toysCollection.createIndex(indexKeys, indexOptions);
 
     app.get("/getToyByText/:text", async (req, res) => {
       const text = req.params.text;
@@ -63,14 +63,14 @@ async function run() {
       ) {
         const result = await toysCollection
           .find({ status: req.params.text })
-          .sort({ createAt: -1 })
+          .sort({ createAt: -1 }).limit(20)
           .toArray();
         return res.send(result);
       }
 
       const result = await toysCollection
         .find({})
-        .sort({ createAt: -1 })
+        .sort({ createAt: -1 }).limit(20)
         .toArray();
       res.send(result);
     });
