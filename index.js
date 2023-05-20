@@ -109,6 +109,17 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/maxPrice/:email', async(req, res) => {
+      console.log(req.params.email);
+      const result = await toysCollection.find({postedBy: req.params.email}).sort({price: -1}).toArray();
+      res.send(result);
+    })
+    app.get('/minPrice/:email', async(req, res) => {
+      console.log(req.params.email);
+      const result = await toysCollection.find({postedBy: req.params.email}).sort({price: 1}).toArray();
+      res.send(result);
+    })
+
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     // console.log(
